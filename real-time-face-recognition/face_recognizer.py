@@ -11,8 +11,8 @@ if __name__ == "__main__":
     recognizer.read('trainer.yml')
 
     # Get Haar cascade file path dynamically
-    cascade_path = os.path.join(os.getcwd(), 'haarcascade_frontalface_default.xml')
-    faceCascade = cv2.CascadeClassifier('D:\\INSIGHT X\\real-time-face-recognition\\haarcascade_frontalface_default.xml')
+    cascade_path = os.path.join(os.getcwd(), '.\\real-time-face-recognition\\haarcascade_frontalface_default.xml')
+    faceCascade = cv2.CascadeClassifier(cascade_path)
 
     # Font for displaying text on the image
     font = cv2.FONT_HERSHEY_SIMPLEX

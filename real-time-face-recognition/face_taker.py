@@ -34,7 +34,7 @@ def save_name(face_id: int, face_name: str, filename: str) -> None:
 
 if __name__ == '__main__':
     directory = 'images'
-    cascade_classifier_filename = 'haarcascade_frontalface_default.xml'
+    cascade_classifier_filename = '.\\real-time-face-recognition\\haarcascade_frontalface_default.xml'
     names_json_filename = 'names.json'
 
     # Create necessary directories
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     # Load Haar cascade file
     cascade_path = os.path.join(os.getcwd(), cascade_classifier_filename)
-    faceCascade = cv2.CascadeClassifier('D:\\INSIGHT X\\real-time-face-recognition\\haarcascade_frontalface_default.xml')
+    faceCascade = cv2.CascadeClassifier(cascade_path)
 
     # Open webcam
     cam = cv2.VideoCapture(0)
