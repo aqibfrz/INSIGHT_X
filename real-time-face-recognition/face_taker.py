@@ -46,8 +46,10 @@ if __name__ == '__main__':
 
     # Open webcam
     cam = cv2.VideoCapture(0)
-    cam.set(3, 640)  # Set width
-    cam.set(4, 480)  # Set height
+    # cam.set(6, 1280)  # Set width
+    # cam.set(8, 720)  # Set height
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     # Get user details
     count = 0
@@ -56,24 +58,36 @@ if __name__ == '__main__':
     save_name(face_id, face_name, names_json_filename)
 
     print('\n[INFO] Initializing face capture. Look at the camera and wait...')
+    # Load the deep learning face detector
+    net = cv2.dnn.readNetFromCaffe(".\\real-time-face-recognition\\deploy.prototxt", ".\\real-time-face-recognition\\res10_300x300_ssd_iter_140000.caffemodel")
 
     while True:
         ret, img = cam.read()
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        h, w = img.shape[:2]
 
-        # Faster face detection with optimized parameters
-        faces = faceCascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=4, minSize=(30, 30))
+        # Preprocess image for deep learning model
+        blob = cv2.dnn.blobFromImage(img, scalefactor=1.0, size=(300, 300), mean=(104.0, 177.0, 123.0))
+        net.setInput(blob)
+        detections = net.forward()
 
-        for (x, y, w, h) in faces:
-            cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        for i in range(detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
 
-            count += 1
-            filename = os.path.join(directory, f'User-{face_id}-{count}.jpg')
-            cv2.imwrite(filename, gray[y:y+h, x:x+w])
+            # Only consider detections with high confidence
+            if confidence > 0.6:
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                (x, y, x1, y1) = box.astype("int")
 
-            cv2.imshow('image', img)
+                # Draw rectangle around detected face
+                cv2.rectangle(img, (x, y), (x1, y1), (0, 255, 0), 2)
 
-        # Press 'q' to quit early OR stop after 15 images
+                # Save face images
+                face_crop = img[y:y1, x:x1]
+                count += 1
+                cv2.imwrite(f'images/User-{face_id}-{count}.jpg', face_crop)
+
+        cv2.imshow('Face Capture', img)
+
         if cv2.waitKey(50) & 0xFF == ord('q') or count >= 30:
             break
 

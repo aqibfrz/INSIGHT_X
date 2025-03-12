@@ -6,13 +6,12 @@ import os
 if __name__ == "__main__":
     # Create LBPH Face Recognizer
     recognizer = cv2.face.LBPHFaceRecognizer_create()
-    
+
     # Load the trained model
     recognizer.read('trainer.yml')
 
-    # Get Haar cascade file path dynamically
-    cascade_path = os.path.join(os.getcwd(), '.\\real-time-face-recognition\\haarcascade_frontalface_default.xml')
-    faceCascade = cv2.CascadeClassifier(cascade_path)
+    # Load Deep Learning Face Detector
+    net = cv2.dnn.readNetFromCaffe(".\\real-time-face-recognition\\deploy.prototxt", ".\\real-time-face-recognition\\res10_300x300_ssd_iter_140000.caffemodel")
 
     # Font for displaying text on the image
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -28,42 +27,50 @@ if __name__ == "__main__":
 
     # Start video capture
     cam = cv2.VideoCapture(0)
-    cam.set(3, 640)  # Set width
-    cam.set(4, 480)  # Set height
-
-    # Minimum face size
-    minW = 0.1 * cam.get(3)
-    minH = 0.1 * cam.get(4)
+    cam.set(3, 1280)  # Set width
+    cam.set(4, 720)  # Set height
 
     while True:
         ret, img = cam.read()
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        h, w = img.shape[:2]
 
-        # Detect faces
-        faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(int(minW), int(minH)))
+        # Convert to blob for DNN model
+        blob = cv2.dnn.blobFromImage(img, scalefactor=1.0, size=(300, 300), mean=(104.0, 177.0, 123.0))
+        net.setInput(blob)
+        detections = net.forward()
 
-        for (x, y, w, h) in faces:
-            # Draw rectangle around face
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        for i in range(detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
+            if confidence > 0.6:  # Higher threshold to reduce false positives
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                (x, y, x1, y1) = box.astype("int")
 
-            # Recognize face
-            id, confidence = recognizer.predict(gray[y:y+h, x:x+w])
+                # Draw rectangle around detected face
+                cv2.rectangle(img, (x, y), (x1, y1), (0, 255, 0), 2)
 
-            # Lower confidence = better match
-            if confidence < 51:
+                # Convert to grayscale for recognition
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                face_roi = gray[y:y1, x:x1]
+
+                # Recognize face
                 try:
-                    name = names[id]
-                    confidence_text = "  {0}%".format(round(100 - confidence))
-                except IndexError:
+                    id, confidence = recognizer.predict(face_roi)
+                    # print(names)
+                    # print(recognizer.predict(face_roi))
+                    if confidence < 50:  # Lower confidence = better match
+                        name = names[id-1]
+                        confidence_text = f"  {round(100 - confidence)}%"
+                    else:
+                        name = "Unknown"
+                        confidence_text = "N/A"
+                except Exception as e:
+                    print(e)
                     name = "Unknown"
                     confidence_text = "N/A"
-            else:
-                name = "Unknown"
-                confidence_text = "N/A"
 
-            # Display name & confidence
-            cv2.putText(img, name, (x + 5, y - 5), font, 1, (255, 255, 255), 2)
-            cv2.putText(img, confidence_text, (x + 5, y + h - 5), font, 1, (255, 255, 0), 1)
+                # Display name & confidence
+                cv2.putText(img, name, (x, y - 10), font, 1, (255, 255, 255), 2)
+                cv2.putText(img, confidence_text, (x, y1 + 20), font, 1, (255, 255, 0), 1)
 
         # Show camera output
         cv2.imshow('Face Recognition', img)
@@ -75,4 +82,3 @@ if __name__ == "__main__":
     print("\n[INFO] Exiting Program.")
     cam.release()
     cv2.destroyAllWindows()
-    
