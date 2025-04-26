@@ -16,16 +16,7 @@ if __name__ == "__main__":
 
 
     def getImagesAndLabels(path):
-        """
-        Load face images and corresponding labels from the given directory path.
 
-        Parameters:
-            path (str): Directory path containing face images.
-
-        Returns:
-            list: List of face samples (grayscale images).
-            list: List of corresponding labels.
-        """
         imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
         faceSamples = []
         ids = []
@@ -48,7 +39,7 @@ if __name__ == "__main__":
 
             for i in range(detections.shape[2]):
                 confidence = detections[0, 0, i, 2]
-                if confidence > 0.6:  # Higher threshold to avoid false positives
+                if confidence > 0.7:
                     box = detections[0, 0, i, 3:7] * np.array(
                         [img_numpy.shape[1], img_numpy.shape[0], img_numpy.shape[1], img_numpy.shape[0]])
                     (x, y, x2, y2) = box.astype("int")

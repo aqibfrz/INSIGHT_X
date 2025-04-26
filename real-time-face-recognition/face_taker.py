@@ -19,16 +19,25 @@ def get_face_id(directory: str) -> int:
             continue
     return min(set(range(1, max(user_ids, default=0) + 2)) - user_ids)
 
-def save_name(face_id: int, face_name: str, filename: str) -> None:
-    """Save user name and ID in a JSON file."""
+
+def save_name(face_id: int, face_name: str, roll_no: str, contact: str, filename: str) -> None:
+    """Save user details (Name, Roll No, Contact) in a JSON file."""
     names_data = {}
+
     if os.path.exists(filename):
         with open(filename, 'r') as fs:
             try:
                 names_data = json.load(fs)
             except json.JSONDecodeError:
-                pass  # Handle empty/corrupt JSON file
-    names_data[str(face_id)] = face_name
+                pass
+
+    # Store details
+    names_data[str(face_id)] = {
+        "name": face_name,
+        "roll_no": roll_no,
+        "contact": contact
+    }
+
     with open(filename, 'w') as fs:
         json.dump(names_data, fs, ensure_ascii=False, indent=4)
 
@@ -53,9 +62,12 @@ if __name__ == '__main__':
 
     # Get user details
     count = 0
-    face_name = input('\nEnter user name and press <return> -->  ')
+    face_name = input('\nEnter user name: ')
+    roll_no = input('Enter roll number: ')
+    contact = input('Enter contact number: ')
+
     face_id = get_face_id(directory)
-    save_name(face_id, face_name, names_json_filename)
+    save_name(face_id, face_name, roll_no, contact, names_json_filename)
 
     print('\n[INFO] Initializing face capture. Look at the camera and wait...')
     # Load the deep learning face detector

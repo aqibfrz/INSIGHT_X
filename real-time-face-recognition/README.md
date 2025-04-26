@@ -20,12 +20,24 @@ Create a fast real-time face recognition app with a few lines of Python code.
 
 ```json
 {
-    "1": "Joe"
+    "1": "ABC"
 }
 ```
 
 Requirements:
 
-- `pip install opencv-python`
-- `pip install opencv-contrib-python --upgrade` or `pip install opencv-contrib-python`
-- `pip install pillow`
+- `install the following library's for the code to actually work is your system
+- opencv-python
+- numpy
+- Pillow
+- dlib
+- face-recognition
+- imutils
+- scikit-learn
+- matplotlib
+- pandas
+- tensorflow
+- keras
+- torch
+- torchvision
+- opencv-contrib-python
