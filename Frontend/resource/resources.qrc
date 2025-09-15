@@ -1,0 +1,12 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <!-- SVG Icons -->
+    <file>icons/live_feed.svg</file>
+    <file>icons/data_entry.svg</file>
+    <file>icons/video_upload.svg</file>
+    <file>icons/sun.svg</file>
+    <file>icons/moon.svg</file>
+    <file>icons/upload.svg</file>
+</qresource>
+</RCC>
